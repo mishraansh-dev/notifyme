@@ -54,3 +54,24 @@ export interface NavLink {
   href: string;
   current?: boolean;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: Date;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  userId?: string;
+  actionUrl?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface ToastNotification {
+  id: string;
+  title?: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  duration?: number;
+  isVisible: boolean;
+}

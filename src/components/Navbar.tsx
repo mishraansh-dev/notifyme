@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useIsAuthenticated, useCurrentUser } from '../store/useAuth';
 import RoleBadge from './RoleBadge';
+import NotificationBell from './NotificationBell';
 import { NavLink } from '../types';
 
 interface NavbarProps {
@@ -66,6 +67,9 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             {/* Auth Section */}
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-3 ml-6">
+                {/* Notification Bell */}
+                <NotificationBell className="mr-2" />
+                
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
                     <span className="text-sm font-semibold text-primary-600">

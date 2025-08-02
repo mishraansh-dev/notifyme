@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar, { FilterOptions } from './Sidebar';
 import Footer from './Footer';
+import ToastNotification from './ToastNotification';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -151,6 +152,9 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Footer */}
       <Footer />
+      
+      {/* Toast Notifications */}
+      <ToastNotification />
     </div>
   );
 };

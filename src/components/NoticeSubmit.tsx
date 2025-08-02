@@ -4,6 +4,7 @@ import { db } from '../config/firebase';
 import { useCurrentUser } from '../store/useAuth';
 import { NoticeFormData } from '../types';
 import toast from 'react-hot-toast';
+import { useToast, useNotifications } from '../store/useNotifications';
 
 interface NoticeSubmitProps {
   onSubmitSuccess?: () => void;
@@ -12,6 +13,8 @@ interface NoticeSubmitProps {
 
 const NoticeSubmit: React.FC<NoticeSubmitProps> = ({ onSubmitSuccess, className }) => {
   const user = useCurrentUser();
+  const { toast } = useToast();
+  const { addNotification } = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<NoticeFormData>({
     title: '',
@@ -133,6 +136,13 @@ const NoticeSubmit: React.FC<NoticeSubmitProps> = ({ onSubmitSuccess, className 
       });
       
       toast.success('Notice submitted successfully!');
+      addNotification({
+        title: 'Notice Submitted',
+        description: `Your notice "${noticeData.title}" has been submitted successfully.`,
+        timestamp: new Date(),
+        type: 'success',
+        isRead: false,
+      });
       onSubmitSuccess?.();
       
     } catch (error) {

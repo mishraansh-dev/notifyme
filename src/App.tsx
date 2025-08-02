@@ -2,12 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NoticeDetails from './pages/NoticeDetails';
 import OrgPanel from './pages/OrgPanel';
+import NotFound from './pages/NotFound';
 import ProtectedRoute, { PublicRoute } from './routes/ProtectedRoute';
 
 function App() {
@@ -15,6 +17,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
+<ErrorBoundary>
           <Routes>
             <Route path="/" element={
               <PublicRoute>
@@ -46,7 +49,9 @@ function App() {
                 <OrgPanel />
               </ProtectedRoute>
             } />
+<Route path="/*" element={<NotFound />} />
           </Routes>
+          </ErrorBoundary>
           <Toaster 
             position="top-right"
             toastOptions={{
