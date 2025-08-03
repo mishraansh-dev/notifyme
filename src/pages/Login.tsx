@@ -1,171 +1,218 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  Link,
+  Stack,
+  Text,
+  VStack,
+  Alert,
+  AlertIcon,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  useColorModeValue,
+  Flex,
+  Card,
+  CardBody,
+  HStack,
+  Center,
+} from '@chakra-ui/react';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { useAuth } from '../store/useAuth';
 
 const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
 
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const validateForm = (): boolean => {
-    const newErrors: { email?: string; password?: string } = {};
-
-    if (!credentials.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!credentials.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCredentials((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+  // Theme colors
+  const bgGradient = useColorModeValue(
+    'linear(to-br, brand.50, accent.50)',
+    'linear(to-br, gray.900, gray.800)'
+  );
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const headingColor = useColorModeValue('gray.800', 'white');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error('Please fix the form errors');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setError('');
+    setIsLoading(true);
 
     try {
-      await login(credentials.email.trim(), credentials.password);
-      navigate('/');
-      toast.success('Logged in successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+      // Simulate authentication logic - in a real app this would be an API call
+      if (!email || !password) {
+        throw new Error('Please fill in all fields');
+      }
+      
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      // Extract name from email (before @) and determine role
+      const emailUsername = email.split('@')[0];
+      const displayName = emailUsername.split('.').map(part => 
+        part.charAt(0).toUpperCase() + part.slice(1)
+      ).join(' ');
+      
+      // Determine role based on email or keywords
+      let role: 'user' | 'org' | 'warden' = 'user';
+      if (email.includes('admin') || email.includes('committee')) {
+        role = 'org';
+      } else if (email.includes('warden')) {
+        role = 'warden';
+      }
+      
+      const userData = {
+        id: `${role}-${Date.now()}`,
+        name: displayName,
+        email: email,
+      };
+      
+      login(role, userData);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Sign in to your account</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">Welcome back to NotifyMe</p>
-        </div>
+    <Flex minH="100vh" align="center" justify="center" bgGradient={bgGradient}>
+      <Container maxW="md" py={12}>
+        <Card shadow="2xl" borderRadius="2xl" bg={cardBg}>
+          <CardBody p={8}>
+            <VStack spacing={8} align="stretch">
+              {/* Header */}
+              <VStack spacing={2} textAlign="center">
+                <Heading
+                  size="xl"
+                  color={headingColor}
+                  fontWeight="bold"
+                >
+                  Welcome back
+                </Heading>
+                <Text color={textColor} fontSize="md">
+                  Sign in to your NotifyMe account
+                </Text>
+              </VStack>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={credentials.email}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
-                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                }`}
-                placeholder="your.email@example.com"
-              />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={credentials.password}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
-                  errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                }`}
-              />
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing In...
-                </>
-              ) : (
-                'Sign In'
+              {/* Error Alert */}
+              {error && (
+                <Alert status="error" borderRadius="lg">
+                  <AlertIcon />
+                  {error}
+                </Alert>
               )}
-            </button>
-          </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
-              >
-                Register here
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
+              {/* Login Form */}
+              <Box as="form" onSubmit={handleSubmit}>
+                <Stack spacing={6}>
+                  <FormControl isRequired>
+                    <FormLabel color={textColor}>Email address</FormLabel>
+                    <InputGroup>
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        size="lg"
+                        focusBorderColor="brand.500"
+                      />
+                    </InputGroup>
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel color={textColor}>Password</FormLabel>
+                    <InputGroup>
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        size="lg"
+                        focusBorderColor="brand.500"
+                      />
+                      <InputRightElement h="full">
+                        <IconButton
+                          variant="ghost"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                          onClick={() => setShowPassword(!showPassword)}
+                          size="sm"
+                        />
+                      </InputRightElement>
+                    </InputGroup>
+                  </FormControl>
+
+                  <Button
+                    type="submit"
+                    colorScheme="brand"
+                    size="lg"
+                    fontSize="md"
+                    fontWeight="semibold"
+                    isLoading={isLoading}
+                    loadingText="Signing in..."
+                    _hover={{
+                      transform: 'translateY(-1px)',
+                      boxShadow: 'lg',
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                </Stack>
+              </Box>
+
+              {/* Register Link */}
+              <VStack spacing={2}>
+                <Text color={textColor} fontSize="sm">
+                  Don't have an account?{' '}
+                  <Link
+                    as={RouterLink}
+                    to="/register"
+                    color="brand.500"
+                    fontWeight="semibold"
+                    _hover={{
+                      color: 'brand.600',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Register here
+                  </Link>
+                </Text>
+
+                <Link
+                  as={RouterLink}
+                  to="/"
+                  color="brand.500"
+                  fontSize="sm"
+                  fontWeight="medium"
+                  _hover={{
+                    color: 'brand.600',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  ← Back to Home
+                </Link>
+              </VStack>
+            </VStack>
+          </CardBody>
+        </Card>
+      </Container>
+    </Flex>
   );
 };
 

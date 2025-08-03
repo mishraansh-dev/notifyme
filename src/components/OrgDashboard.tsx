@@ -42,9 +42,9 @@ const OrgDashboard: React.FC<OrgDashboardProps> = ({ orgName, className }) => {
     }
   };
 
-  const handleStatusChange = async (noticeId: string, newStatus: string) => {
+  const handleStatusChange = async (noticeId: string, newStatus: 'pending' | 'ongoing' | 'completed') => {
     try {
-      await updateNoticeStatus(noticeId, newStatus as any);
+      await updateNoticeStatus(noticeId, newStatus);
       setNotices(prev => 
         prev.map(notice => 
           notice.id === noticeId 

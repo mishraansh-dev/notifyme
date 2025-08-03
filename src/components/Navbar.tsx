@@ -1,208 +1,300 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth, useIsAuthenticated, useCurrentUser } from '../store/useAuth';
-import RoleBadge from './RoleBadge';
-import NotificationBell from './NotificationBell';
-import { NavLink } from '../types';
+import React from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Flex,
+  Text,
+  Button,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useDisclosure,
+  HStack,
+  VStack,
+  Collapse,
+  useColorModeValue,
+  Avatar,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+} from '@chakra-ui/react';
+import { HamburgerIcon, CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { useAuth, useIsAuthenticated, useCurrentUser, useUserRole } from '../store/useAuth';
+import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   className?: string;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ className }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar: React.FC<NavbarProps> = () => {
+  const { isOpen: isMobileOpen, onOpen, onClose } = useDisclosure();
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const isAuthenticated = useIsAuthenticated();
   const user = useCurrentUser();
+  const role = useUserRole();
 
-  const navigation: NavLink[] = [
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+
+  // Navigation links based on authentication and role
+  const publicLinks = [
     { name: 'Home', href: '/', current: location.pathname === '/' },
-    ...(isAuthenticated ? [
-      { name: 'Dashboard', href: '/dashboard', current: location.pathname === '/dashboard' }
-    ] : []),
+    { name: 'About', href: '/about', current: location.pathname === '/about' },
+    { name: 'Contact', href: '/contact', current: location.pathname === '/contact' },
+    { name: 'FAQs', href: '/faqs', current: location.pathname === '/faqs' },
   ];
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const authenticatedLinks = [
+    { name: 'Dashboard', href: '/dashboard', current: location.pathname === '/dashboard' },
+    ...(role === 'org' ? [
+      { name: 'Post Notice', href: '/post-notice', current: location.pathname === '/post-notice' }
+    ] : []),
+    { name: 'My Reports', href: '/my-reports', current: location.pathname === '/my-reports' },
+  ];
+
+  const allLinks = [...publicLinks, ...(isAuthenticated ? authenticatedLinks : [])];
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
-    setIsMenuOpen(false);
+    navigate('/');
+    onClose();
+  };
+
+  const getRoleDashboard = () => {
+    switch (role) {
+      case 'user': return '/user-dashboard';
+      case 'org': return '/admin-dashboard';
+      case 'warden': return '/warden-panel';
+      default: return '/dashboard';
+    }
   };
 
   return (
-    <nav className={`sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200 ${className || ''}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo/Brand */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
-              NotifyMe
-            </Link>
-          </div>
+    <Box 
+      as="nav" 
+      boxShadow="md" 
+      bg={bg} 
+      borderBottom="1px" 
+      borderColor={borderColor}
+      width="100%" 
+      pos="sticky" 
+      top="0" 
+      zIndex="1000"
+    >
+      <Container maxW="container.xl">
+        <Flex align="center" justify="space-between" py={4}>
+          {/* Logo */}
+          <Text
+            as={RouterLink}
+            to="/"
+            fontSize="2xl"
+            fontWeight="bold"
+            color="brand.500"
+            _hover={{ color: 'brand.600' }}
+          >
+            NotifyMe
+          </Text>
+          
+          {/* Desktop Menu */}
+          <HStack
+            as="nav"
+            spacing={6}
+            display={{ base: 'none', lg: 'flex' }}
+            align="center"
+          >
+            {allLinks.map((item) => (
+              <Button 
+                key={item.name} 
+                as={RouterLink} 
+                to={item.href} 
+                variant={item.current ? 'solid' : 'ghost'}
+                colorScheme={item.current ? 'brand' : 'gray'}
+                size="md"
+              >
+                {item.name}
+              </Button>
+            ))}
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-baseline space-x-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    item.current
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                  aria-current={item.current ? 'page' : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-            
-            {/* Auth Section */}
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User Menu or Auth Buttons */}
             {isAuthenticated && user ? (
-              <div className="flex items-center space-x-3 ml-6">
-                {/* Notification Bell */}
-                <NotificationBell className="mr-2" />
-                
-                <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary-600">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                  <RoleBadge role={user ? (user.email.includes('admin') ? 'admin' : 'user') : 'user'} size="sm" />
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  leftIcon={<Avatar size="sm" name={user.name} />}
+                  variant="ghost"
                 >
-                  Logout
-                </button>
-              </div>
+                  {user.name}
+                </MenuButton>
+                <MenuList>
+                  <MenuItem as={RouterLink} to="/profile">
+                    Profile
+                  </MenuItem>
+                  <MenuItem as={RouterLink} to={getRoleDashboard()}>
+                    {role === 'org' ? 'Admin Dashboard' : 
+                     role === 'warden' ? 'Warden Panel' : 
+                     'My Dashboard'}
+                  </MenuItem>
+                  {role === 'org' && (
+                    <MenuItem as={RouterLink} to="/post-notice">
+                      Post Notice
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={handleLogout} color="red.500">
+                    Logout
+                  </MenuItem>
+                </MenuList>
+              </Menu>
             ) : (
-              <div className="flex items-center space-x-3 ml-6">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              <HStack spacing={3}>
+                <Button 
+                  as={RouterLink} 
+                  to="/login" 
+                  variant="ghost" 
+                  size="md"
                 >
                   Login
-                </Link>
-              </div>
+                </Button>
+                <Button 
+                  as={RouterLink} 
+                  to="/register" 
+                  colorScheme="brand" 
+                  size="md"
+                >
+                  Register
+                </Button>
+              </HStack>
             )}
-          </div>
+          </HStack>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              {/* Hamburger icon */}
-              <svg
-                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-              {/* Close icon */}
-              <svg
-                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+          {/* Mobile Menu Button */}
+          <IconButton 
+            aria-label="Toggle Navigation"
+            onClick={onOpen}
+            icon={<HamburgerIcon />}
+            display={{ lg: 'none' }}
+            variant="ghost"
+            size="md"
+          />
+        </Flex>
+      </Container>
 
-      {/* Mobile menu */}
-      <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`} id="mobile-menu">
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 border-t border-gray-200">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                item.current
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-              aria-current={item.current ? 'page' : undefined}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-          
-          {/* Mobile Auth Section */}
-          {isAuthenticated && user ? (
-            <>
-              <div className="px-3 py-2 border-t border-gray-300 mt-3 pt-3">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary-600">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-base font-medium text-gray-900">{user.name}</div>
-                    <div className="text-sm text-gray-600">{user.email}</div>
-                  </div>
-                </div>
-                <RoleBadge role={user ? (user.email.includes('admin') ? 'admin' : 'user') : 'user'} size="sm" className="mb-3" />
-              </div>
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <div className="border-t border-gray-300 mt-3 pt-3">
-              <Link
-                to="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Login
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-    </nav>
+      {/* Mobile Drawer */}
+      <Drawer isOpen={isMobileOpen} placement="right" onClose={onClose}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader borderBottomWidth="1px">
+            <Text color="brand.500" fontWeight="bold">
+              NotifyMe
+            </Text>
+          </DrawerHeader>
+
+          <DrawerBody>
+            <VStack spacing={4} align="stretch" pt={4}>
+              {/* Navigation Links */}
+              {allLinks.map((item) => (
+                <Button 
+                  key={item.name} 
+                  as={RouterLink} 
+                  to={item.href} 
+                  variant={item.current ? 'solid' : 'ghost'}
+                  colorScheme={item.current ? 'brand' : 'gray'}
+                  justifyContent="flex-start"
+                  onClick={onClose}
+                >
+                  {item.name}
+                </Button>
+              ))}
+
+              {/* Theme Toggle */}
+              <Box py={2}>
+                <ThemeToggle />
+              </Box>
+
+              {/* User Menu or Auth Buttons */}
+              {isAuthenticated && user ? (
+                <VStack spacing={3} align="stretch" pt={4} borderTopWidth="1px">
+                  <Text fontSize="sm" color="gray.500" textAlign="center">
+                    Signed in as {user.name}
+                  </Text>
+                  <Button 
+                    as={RouterLink} 
+                    to="/profile" 
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    onClick={onClose}
+                  >
+                    Profile
+                  </Button>
+                  <Button 
+                    as={RouterLink} 
+                    to={getRoleDashboard()} 
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    onClick={onClose}
+                  >
+                    {role === 'org' ? 'Admin Dashboard' : 
+                     role === 'warden' ? 'Warden Panel' : 
+                     'My Dashboard'}
+                  </Button>
+                  {role === 'org' && (
+                    <Button 
+                      as={RouterLink} 
+                      to="/post-notice" 
+                      variant="ghost"
+                      justifyContent="flex-start"
+                      onClick={onClose}
+                    >
+                      Post Notice
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={handleLogout} 
+                    colorScheme="red" 
+                    variant="outline"
+                  >
+                    Logout
+                  </Button>
+                </VStack>
+              ) : (
+                <VStack spacing={3} align="stretch" pt={4} borderTopWidth="1px">
+                  <Button 
+                    as={RouterLink} 
+                    to="/login" 
+                    variant="outline" 
+                    onClick={onClose}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    as={RouterLink} 
+                    to="/register" 
+                    colorScheme="brand"
+                    onClick={onClose}
+                  >
+                    Register
+                  </Button>
+                </VStack>
+              )}
+            </VStack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </Box>
   );
 };
 
 export default Navbar;
+

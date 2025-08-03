@@ -43,10 +43,22 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'resident' | 'admin';
+  role: 'user' | 'org' | 'warden';
   block?: string;
   floor?: string;
   room?: string;
+}
+
+export interface Report {
+  id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in-progress' | 'resolved';
+  category?: string;
+  priority?: 'low' | 'medium' | 'high';
+  submittedAt?: Date;
+  assignedTo?: string;
+  comments?: string[];
 }
 
 export interface NavLink {

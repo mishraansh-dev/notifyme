@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Text, Flex, HStack, Badge } from '@chakra-ui/react';
 
 interface NoticeCardProps {
   title: string;
@@ -54,96 +55,70 @@ const NoticeCard: React.FC<NoticeCardProps> = ({
   };
 
   return (
-    <div
-      className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 overflow-hidden cursor-pointer ${className || ''} ${
-        isPinned ? 'border-primary-300 ring-2 ring-primary-100' : ''
-      }`}
+<Box
+      bg="white"
+      rounded="lg"
+      shadow="lg"
+      transition="box-shadow 0.2s"
+      _hover={{ boxShadow: 'xl' }}
+      cursor="pointer"
       onClick={onCardClick}
     >
-      {/* Pinned indicator */}
       {isPinned && (
-        <div className="bg-primary-50 px-4 py-2 border-b border-primary-200">
-          <div className="flex items-center text-primary-700 text-sm font-medium">
+        <Box bg="brand.50" px={4} py={2} borderBottomWidth="1px" borderColor="brand.200">
+          <HStack spacing={2} color="brand.700" fontWeight="medium">
             <svg
-              className="w-4 h-4 mr-2"
+              width="16"
+              height="16"
               fill="currentColor"
-              viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                fillRule="evenodd"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                clipRule="evenodd"
-              />
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
             </svg>
             Pinned Notice
-          </div>
-        </div>
+          </HStack>
+        </Box>
       )}
 
-      <div className="p-4 sm:p-6">
-        {/* Header with title and tag */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0 pr-0 sm:pr-4">
+      <Box p={6}>
+        <Flex justify="space-between" align="start" mb={4}>
+          <Text fontSize="xl" fontWeight="bold" color="gray.800">
             {title}
-          </h3>
+          </Text>
           {tag && (
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
-                getTagColor(tag)
-              }`}
+            <Badge
+              px={2}
+              py={1}
+              bg={getTagColor(tag)}
+              color='gray.800'
+              rounded="full"
+              textTransform="capitalize"
             >
               {tag}
-            </span>
+            </Badge>
           )}
-        </div>
-
-        {/* Description */}
-        <p className="text-gray-700 text-sm sm:text-base mb-4 leading-relaxed line-clamp-3">
+        </Flex>
+        <Text color="gray.600" noOfLines={3} mb={4}>
           {description}
-        </p>
-
-        {/* Footer with timestamp and author */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
-          <div className="flex items-center mb-2 sm:mb-0">
-            <svg
-              className="w-4 h-4 mr-1.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+        </Text>
+        <Flex justify="space-between" align="center" color="gray.500" fontSize="sm">
+          <HStack spacing={2}>
+            <svg height="16" width="16" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {formatTimestamp(timestamp)}
-          </div>
+            <Text>{formatTimestamp(timestamp)}</Text>
+          </HStack>
           {author && (
-            <div className="flex items-center">
-              <svg
-                className="w-4 h-4 mr-1.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
+            <HStack spacing={2}>
+              <svg height="16" width="16" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="font-medium">By {author}</span>
-            </div>
+              <Text>By {author}</Text>
+            </HStack>
           )}
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Box>
+    </Box>
   );
 };
 

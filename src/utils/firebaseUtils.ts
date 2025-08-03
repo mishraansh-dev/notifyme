@@ -6,9 +6,7 @@ import {
   where, 
   orderBy, 
   getDocs,
-  serverTimestamp,
-  QuerySnapshot,
-  DocumentData
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { NoticeStatus } from '../components/StatusBadge';

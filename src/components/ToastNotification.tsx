@@ -53,7 +53,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ className }) => {
 
   return (
     <div className={`fixed bottom-4 right-4 z-50 space-y-2 ${className || ''}`}>
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
             key={toast.id}
@@ -124,84 +124,3 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ className }) => {
 };
 
 export default ToastNotification;
-
-/*
-SAMPLE USAGE:
-
-1. Import the hook:
-```typescript
-import { useToast } from '../store/useNotifications';
-```
-
-2. Use in your component:
-```typescript
-const { toast } = useToast();
-
-// Success toast
-toast.success('Profile updated successfully!', 'Success');
-
-// Error toast
-toast.error('Failed to save changes. Please try again.', 'Error');
-
-// Warning toast
-toast.warning('This action cannot be undone.', 'Warning');
-
-// Info toast
-toast.info('New features are available!', 'Info');
-
-// Custom duration (default is 5000ms)
-import { useNotifications } from '../store/useNotifications';
-const { addToast } = useNotifications();
-addToast({
-  message: 'This will disappear in 10 seconds',
-  type: 'info',
-  duration: 10000
-});
-```
-
-3. Add ToastNotification to your root component (App.tsx or Layout):
-```typescript
-import ToastNotification from './components/ToastNotification';
-
-function App() {
-  return (
-    <div className="App">
-      {/* Your app content */}
-      <ToastNotification />
-    </div>
-  );
-}
-```
-
-4. Real-time feedback examples:
-
-// After submitting a notice
-const handleSubmitNotice = async (data) => {
-  try {
-    await submitNotice(data);
-    toast.success('Notice submitted successfully!');
-  } catch (error) {
-    toast.error('Failed to submit notice. Please try again.');
-  }
-};
-
-// When a new notification is received
-useEffect(() => {
-  const unsubscribe = subscribeToNotifications((newNotification) => {
-    addNotification(newNotification);
-    toast.info(`New ${newNotification.type}: ${newNotification.title}`);
-  });
-  
-  return unsubscribe;
-}, []);
-
-// Admin actions
-const handleApproveNotice = async (id) => {
-  try {
-    await approveNotice(id);
-    toast.success('Notice approved successfully!');
-  } catch (error) {
-    toast.error('Failed to approve notice.');
-  }
-};
-*/

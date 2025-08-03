@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = 'user' | 'org' | null;
+export type UserRole = 'user' | 'org' | 'warden' | null;
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -15,6 +15,7 @@ interface AuthState {
 
 interface AuthActions {
   login: (role: UserRole, userData?: { id: string; name: string; email: string }) => void;
+  register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   setUser: (user: { id: string; name: string; email: string }) => void;
 }
@@ -31,18 +32,32 @@ export const useAuth = create<AuthStore>()(
 
       // Login action
       login: (role: UserRole, userData) => {
-        if (!role) return;
+        if (!role || !userData) return;
         
-        const defaultUser = {
-          id: role === 'user' ? 'user-123' : 'org-456',
-          name: role === 'user' ? 'John Doe' : 'Community Management',
-          email: role === 'user' ? 'john@example.com' : 'admin@community.com',
-        };
-
         set({
           isAuthenticated: true,
           role,
-          user: userData || defaultUser,
+          user: userData,
+        });
+      },
+
+      // Register action
+      register: async (email: string, password: string, name: string) => {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Create new user account
+        const userData = {
+          id: `user-${Date.now()}`,
+          name,
+          email,
+        };
+        
+        // Log them in as a regular user
+        set({
+          isAuthenticated: true,
+          role: 'user',
+          user: userData,
         });
       },
 

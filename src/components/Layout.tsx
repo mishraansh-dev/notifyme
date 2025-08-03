@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Box, Flex, Heading, Container, useColorModeValue, InputGroup, InputLeftElement, Input, IconButton } from '@chakra-ui/react';
+import { HamburgerIcon, SearchIcon } from '@chakra-ui/icons';
 import Navbar from './Navbar';
 import Sidebar, { FilterOptions } from './Sidebar';
 import Footer from './Footer';
@@ -35,6 +37,15 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const [internalSidebarOpen, setInternalSidebarOpen] = useState(false);
 
+  // Call hooks at the top level
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const headerBgColor = useColorModeValue('white', 'gray.800');
+  const headerBorderColor = useColorModeValue('gray.200', 'gray.600');
+  const inputBgColor = useColorModeValue('white', 'gray.800');
+  const inputBorderColor = useColorModeValue('gray.300', 'gray.600');
+  const inputTextColor = useColorModeValue('gray.900', 'white');
+  const titleColor = useColorModeValue('gray.900', 'white');
+
   // Use controlled or internal sidebar state
   const sidebarOpen = controlledSidebarOpen !== undefined ? controlledSidebarOpen : internalSidebarOpen;
   const setSidebarOpen = onSidebarToggle || setInternalSidebarOpen;
@@ -54,12 +65,12 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-gray-50 flex flex-col ${className || ''}`}>
+    <Box minH="100vh" bg={bgColor} display="flex" flexDir="column" className={className || ''}>
       {/* Navbar */}
-      <Navbar className="relative z-40" />
+      <Navbar />
 
       {/* Main content area */}
-      <div className="flex-1 flex">
+      <Flex flex="1">
         {/* Sidebar */}
         {withSidebar && (
           <Sidebar
@@ -67,95 +78,70 @@ const Layout: React.FC<LayoutProps> = ({
             onClose={handleSidebarClose}
             filters={filters || defaultFilters}
             onFiltersChange={onFiltersChange || (() => {})}
-            className="relative z-30"
           />
         )}
 
         {/* Main content */}
-        <main className="flex-1 flex flex-col min-w-0">
+        <Box flex="1" flexDir="column" minW="0">
           {/* Page header (optional) */}
           {(title || showSearch || withSidebar) && (
-            <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <div className="flex items-center space-x-3">
+            <Box bg={headerBgColor} borderBottomWidth="1px" borderColor={headerBorderColor} px={{ base: 4, sm: 6, lg: 8 }} py={4}>
+              <Flex flexDir={{ base: 'column', sm: 'row' }} align="center" justify="space-between" gap={3}>
+                <Flex align="center" gap={3}>
                   {/* Sidebar toggle button (mobile + desktop) */}
                   {withSidebar && (
-                    <button
+                    <IconButton
                       onClick={handleSidebarToggle}
-                      className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      icon={<HamburgerIcon w={5} h={5} />}
+                      variant="ghost"
                       aria-label="Toggle sidebar"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 6h16M4 12h16M4 18h16"
-                        />
-                      </svg>
-                    </button>
+                    />
                   )}
 
                   {/* Page title */}
                   {title && (
-                    <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                    <Heading size="lg" fontWeight="semibold" color={titleColor}>
                       {title}
-                    </h1>
+                    </Heading>
                   )}
-                </div>
+                </Flex>
 
                 {/* Search bar (if enabled) */}
                 {showSearch && onSearchChange && (
-                  <div className="w-full sm:w-96">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-5 w-5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                          />
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        value={searchValue}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search notices..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                      />
-                    </div>
-                  </div>
+                  <InputGroup maxW={{ base: "full", sm: "xs" }}>
+                    <InputLeftElement pointerEvents="none">
+                      <SearchIcon color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      type="text"
+                      value={searchValue}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                      placeholder="Search notices..."
+                      bg={inputBgColor}
+                      borderColor={inputBorderColor}
+                      color={inputTextColor}
+                      focusBorderColor="brand.500"
+                      _placeholder={{ color: 'gray.500' }}
+                    />
+                  </InputGroup>
                 )}
-              </div>
-            </div>
+              </Flex>
+            </Box>
           )}
 
           {/* Page content */}
-          <div className={`flex-1 ${containerClassName || 'container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'}`}>
+          <Container maxW="container.xl" py={{ base: 6, sm: 8 }} className={containerClassName || ''}>
             {children}
-          </div>
-        </main>
-      </div>
+          </Container>
+        </Box>
+      </Flex>
 
       {/* Footer */}
       <Footer />
       
       {/* Toast Notifications */}
       <ToastNotification />
-    </div>
+    </Box>
   );
 };
 
